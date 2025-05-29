@@ -62,3 +62,9 @@ void search(const char *text, const char *pattern) {
     }
 }
 
+int main() {
+    char text[MAX_TEXT_LEN] = "GEEKS FOR GEEKS";
+    char pattern[MAX_PATTERN_LEN] = "GEEK";
+    search(text, pattern);
+    return 0;
+}
