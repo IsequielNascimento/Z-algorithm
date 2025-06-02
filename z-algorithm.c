@@ -113,7 +113,7 @@ int kmp_search(const char *text, const char *pattern, int text_len, int pattern_
 // ============================================================================
 int main() {
     // Definição das estruturas principais
-    char text[MAX_TEXT_SIZE + 1] = "cgactgttatgggttcagtctcgttagtaaataatacaaaatgcccgttcacagctaaggttcatccgtgccgcggtaagtcccgttttcggcagcttca";
+    char text[MAX_TEXT_SIZE + 1] = "cgactgttatgggttcagtctcgttagtaaataatacaaaatgcccg";
     char pattern[MAX_PATTERN_SIZE + 1] = "atgc";
 
     int text_len = strlen(text);           // Tamanho do texto
@@ -124,15 +124,15 @@ int main() {
 
     // Executa a busca usando Z-Algorithm
     int count_z = z_search(text, pattern, text_len, pattern_len, occurrences_z);
-    printf("Z-Algorithm encontrou %d ocorrências:\n", count_z);
+    printf("Z-Algorithm encontrou %d ocorrencias:\n", count_z);
     for (int i = 0; i < count_z; i++)
-        printf("Posição: %d\n", occurrences_z[i]);
+        printf("Posicao: %d\n", occurrences_z[i]);
 
     // Executa a busca usando KMP
     int count_kmp = kmp_search(text, pattern, text_len, pattern_len, occurrences_kmp);
-    printf("\nKMP encontrou %d ocorrências:\n", count_kmp);
+    printf("\nKMP encontrou %d ocorrencias:\n", count_kmp);
     for (int i = 0; i < count_kmp; i++)
-        printf("Posição: %d\n", occurrences_kmp[i]);
+        printf("Posicao: %d\n", occurrences_kmp[i]);
 
     // Exibe informações de uso de memória (opcional, para depuração)
     printf("Tamanho de text[]: %zu bytes\n", sizeof(text));
