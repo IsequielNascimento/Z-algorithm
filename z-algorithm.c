@@ -60,84 +60,48 @@ int z_search(const char *text, const char *pattern, int text_len, int pattern_le
     return count;  // Retorna o número total de ocorrências
 }
 
-// ============================================================================
-// Função: compute_prefix_function
-// Objetivo: Calcula o prefixo para o padrão (pattern) no KMP
-// ============================================================================
-void compute_prefix_function(const char *pattern, int m, int pi[]) {
-    int k = 0;      // Comprimento do maior prefixo que também é sufixo
-    pi[0] = 0;      // Por definição, pi[0] = 0
+int main() {
+    char text[MAX_TEXT_SIZE + 1] = {0};
+    char pattern[MAX_PATTERN_SIZE + 1] = "ATGC";
 
-    for (int q = 1; q < m; q++) {  // Itera sobre o padrão
-        // Ajusta k se há divergência entre pattern[k] e pattern[q]
-        while (k > 0 && pattern[k] != pattern[q])
-            k = pi[k - 1];          // Volta para o próximo maior prefixo
-
-        if (pattern[k] == pattern[q])
-            k++;                    // Aumenta k se os caracteres coincidem
-
-        pi[q] = k;                  // Armazena o comprimento do prefixo atual
+    FILE *file = fopen("sequencia.txt", "r");
+    if (!file) {
+        printf("Erro ao abrir sequencia.txt\n");
+        return 1;
     }
-}
 
-// ============================================================================
-// Função: kmp_search
-// Objetivo: Busca o padrão (pattern) no texto usando o KMP
-// ============================================================================
-int kmp_search(const char *text, const char *pattern, int text_len, int pattern_len, int occurrences[]) {
-    int pi[MAX_PATTERN_SIZE];       // Vetor de prefixos (pi) para o padrão
-    compute_prefix_function(pattern, pattern_len, pi);  // Pré-processamento do padrão
-
-    int q = 0;                      // Número de caracteres do padrão já casados
-    int count = 0;                  // Contador de ocorrências encontradas
-
-    for (int i = 0; i < text_len; i++) {  // Percorre o texto
-        // Ajusta q se há divergência entre pattern[q] e text[i]
-        while (q > 0 && pattern[q] != text[i])
-            q = pi[q - 1];          // Volta para o próximo maior prefixo
-
-        if (pattern[q] == text[i])
-            q++;                    // Avança q se os caracteres coincidem
-
-        if (q == pattern_len && count < MAX_OCCURRENCES) {
-            // Encontrou uma ocorrência do padrão no texto
-            occurrences[count++] = i - pattern_len + 1;  // Calcula a posição de início
-            q = pi[q - 1];          // Prepara q para continuar a busca
+    char line[256];
+    while (fgets(line, sizeof(line), file)) {
+        size_t len = strlen(line);
+        for (size_t i = 0; i < len; i++) {
+            if (line[i] != '\n' && line[i] != '\r') {
+                size_t curr_len = strlen(text);
+                if (curr_len < MAX_TEXT_SIZE) {
+                    text[curr_len] = line[i];
+                    text[curr_len + 1] = '\0';
+                }
+            }
         }
     }
-    return count;  // Retorna o número total de ocorrências
-}
+    fclose(file);
 
-// ============================================================================
-// Função principal: main
-// ============================================================================
-int main() {
-    // Definição das estruturas principais
-    char text[MAX_TEXT_SIZE + 1] = "cgactgttatgggttcagtctcgttagtaaataatacaaaatgcccg";
-    char pattern[MAX_PATTERN_SIZE + 1] = "atgc";
+    int text_len = strlen(text);
+    int pattern_len = strlen(pattern);
+    int occurrences[MAX_OCCURRENCES];
 
-    int text_len = strlen(text);           // Tamanho do texto
-    int pattern_len = strlen(pattern);     // Tamanho do padrão
+    int count = z_search(text, pattern, text_len, pattern_len, occurrences);
 
-    int occurrences_z[MAX_OCCURRENCES];    // Vetor para armazenar as ocorrências do Z-Algorithm
-    int occurrences_kmp[MAX_OCCURRENCES];  // Vetor para armazenar as ocorrências do KMP
+    FILE *out = fopen("posicoes.txt", "w");
+    if (!out) {
+        printf("Erro ao criar posicoes.txt\n");
+        return 1;
+    }
 
-    // Executa a busca usando Z-Algorithm
-    int count_z = z_search(text, pattern, text_len, pattern_len, occurrences_z);
-    printf("Z-Algorithm encontrou %d ocorrencias:\n", count_z);
-    for (int i = 0; i < count_z; i++)
-        printf("Posicao: %d\n", occurrences_z[i]);
+    fprintf(out, "Z-Algorithm encontrou %d ocorrencias:\n", count);
+    for (int i = 0; i < count; i++)
+        fprintf(out, "Posicao: %d\n", occurrences[i]);
 
-    // Executa a busca usando KMP
-    int count_kmp = kmp_search(text, pattern, text_len, pattern_len, occurrences_kmp);
-    printf("\nKMP encontrou %d ocorrencias:\n", count_kmp);
-    for (int i = 0; i < count_kmp; i++)
-        printf("Posicao: %d\n", occurrences_kmp[i]);
-
-    // Exibe informações de uso de memória (opcional, para depuração)
-    printf("Tamanho de text[]: %zu bytes\n", sizeof(text));
-    printf("Total usado pelas estruturas principais: %zu bytes\n",
-       sizeof(text) + sizeof(occurrences_z) + sizeof(occurrences_kmp));
+    fclose(out);
 
     return 0;
 }
