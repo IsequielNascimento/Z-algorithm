@@ -1,29 +1,83 @@
+/**
+ * @file z-algorithm.c
+ * @brief Implementação do algoritmo Z (Z-Algorithm) para busca de padrões em sequências de DNA.
+ * 
+ * Esta aplicação lê uma sequência de DNA de um arquivo `sequencia.txt`, procura por todas as ocorrências
+ * de um padrão fixo (por padrão, "ATGC") usando o algoritmo Z e escreve as posições encontradas no
+ * arquivo `posicoes.txt`.
+ * 
+ * @details Este código foi desenvolvido como parte do trabalho T1 da disciplina de Sistemas Embarcados
+ * do curso de Engenharia de Computação do IFCE - Campus Fortaleza.
+ * 
+ * @authors
+ *   - Isequiel Henrique do Nascimento (isequiel.nascimento62@aluno.ifce.edu.br)  
+ *   - Alan Andrade Nogueira (alan.andrade.nogueira03@aluno.ifce.edu.br)
+ * 
+ * @date 2025-06-05
+ * @version 1.0
+ * 
+ * @copyright
+ * MIT License
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ * 
+ * @platform
+ * - Sistema Operacional: Linux ou Windows (compilado via gcc ou compatível)
+ * - Requisitos: Compilador C (gcc), arquivos `sequencia.txt` com a sequência de entrada
+ * 
+ * @how_to_use
+ * Compile com: `gcc -o z-algorithm z-algorithm.c`
+ * Execute com: `./z-algorithm` en linux ou z-algorithm.exe no windows
+ * 
+ * @input
+ * - Arquivo `sequencia.txt` contendo a sequência de DNA (sem formatação especial).
+ * 
+ * @output
+ * - Arquivo `posicoes.txt` com as posições onde o padrão foi encontrado.
+ */
+
 #include <stdio.h>
 #include <string.h>
 
-// Definição de constantes (estrutura de dados: defines para limites máximos)
-#define MAX_TEXT_SIZE 8000          // Tamanho máximo do texto
-#define MAX_PATTERN_SIZE 100        // Tamanho máximo do padrão (pattern)
-#define MAX_OCCURRENCES 1000        // Número máximo de ocorrências a registrar
+// =============================================================================
+// Constantes para limites máximos
+// =============================================================================
 
-// ============================================================================
+#define MAX_TEXT_SIZE 8000         /**< Tamanho máximo da sequência de entrada */
+#define MAX_PATTERN_SIZE 100       /**< Tamanho máximo do padrão a ser buscado */
+#define MAX_OCCURRENCES 1000       /**< Número máximo de ocorrências a registrar */
+
+// =============================================================================
 // Função: compute_z_array
-// Objetivo: Calcula o vetor Z para uma string s[] usando o Z-Algorithm
-// ============================================================================
-void compute_z_array(const char *s, int z[], int length) {
-    int l = 0, r = 0;               // Variáveis para a janela [l, r]
-    z[0] = 0;                       // Por definição, Z[0] = 0
+// =============================================================================
 
-    for (int i = 1; i < length; i++) {   // Percorre a string
-        if (i <= r)  // Se estiver dentro da janela [l, r]
-            // Pega o valor mínimo possível de z[i] para economizar comparações
+/**
+ * @brief Calcula o vetor Z para uma string utilizando o Z-Algorithm.
+ *
+ * @param s String de entrada (concatenada: padrão + '$' + texto).
+ * @param z Vetor de saída contendo os valores Z calculados.
+ * @param length Comprimento da string s.
+ */
+void compute_z_array(const char *s, int z[], int length) {
+    int l = 0, r = 0;
+    z[0] = 0;
+
+    for (int i = 1; i < length; i++) {
+        if (i <= r)
             z[i] = (r - i + 1 < z[i - l]) ? (r - i + 1) : z[i - l];
 
-        // Expande a janela, comparando caracteres da string
         while (i + z[i] < length && s[z[i]] == s[i + z[i]])
             z[i]++;
 
-        // Atualiza [l, r] se expandiu além da janela atual
         if (i + z[i] - 1 > r) {
             l = i;
             r = i + z[i] - 1;
@@ -31,35 +85,51 @@ void compute_z_array(const char *s, int z[], int length) {
     }
 }
 
-// ============================================================================
+// =============================================================================
 // Função: z_search
-// Objetivo: Busca o padrão (pattern) no texto usando o Z-Algorithm
-// ============================================================================
+// =============================================================================
+
+/**
+ * @brief Realiza a busca de um padrão em um texto usando o Z-Algorithm.
+ * 
+ * @param text Sequência de DNA a ser analisada.
+ * @param pattern Padrão a ser buscado.
+ * @param text_len Comprimento do texto.
+ * @param pattern_len Comprimento do padrão.
+ * @param occurrences Vetor de saída com as posições encontradas.
+ * 
+ * @return Número de ocorrências encontradas.
+ */
 int z_search(const char *text, const char *pattern, int text_len, int pattern_len, int occurrences[]) {
-    // Estruturas de dados locais
-    char concat[MAX_PATTERN_SIZE + 1 + MAX_TEXT_SIZE];  // Concatenar pattern + '$' + text
-    int z[MAX_PATTERN_SIZE + 1 + MAX_TEXT_SIZE];        // Vetor Z para a string concatenada
-    int concat_len = pattern_len + 1 + text_len;        // Comprimento total da string concatenada
+    char concat[MAX_PATTERN_SIZE + 1 + MAX_TEXT_SIZE];
+    int z[MAX_PATTERN_SIZE + 1 + MAX_TEXT_SIZE];
+    int concat_len = pattern_len + 1 + text_len;
 
-    // Concatenar pattern + '$' + text (O '$' é um caractere especial, não ocorre no texto)
     strncpy(concat, pattern, pattern_len);
-    concat[pattern_len] = '$';                          // Separador
-    strncpy(concat + pattern_len + 1, text, text_len);  // Copia o texto após o '$'
+    concat[pattern_len] = '$';
+    strncpy(concat + pattern_len + 1, text, text_len);
 
-    // Calcula o vetor Z para a string concatenada
     compute_z_array(concat, z, concat_len);
 
-    int count = 0;  // Contador de ocorrências encontradas
-    // Itera sobre o vetor Z (começando depois do separador)
+    int count = 0;
     for (int i = pattern_len + 1; i < concat_len; i++) {
         if (z[i] == pattern_len && count < MAX_OCCURRENCES) {
-            // Encontrou uma ocorrência do pattern no text
-            occurrences[count++] = i - pattern_len - 1;  // Calcula a posição correta no texto
+            occurrences[count++] = i - pattern_len - 1;
         }
     }
-    return count;  // Retorna o número total de ocorrências
+
+    return count;
 }
 
+// =============================================================================
+// Função: main
+// =============================================================================
+
+/**
+ * @brief Função principal. Lê o texto do arquivo, busca o padrão e escreve as ocorrências.
+ * 
+ * @return int Código de status da execução (0: sucesso, 1: erro).
+ */
 int main() {
     char text[MAX_TEXT_SIZE + 1] = {0};
     char pattern[MAX_PATTERN_SIZE + 1] = "ATGC";
@@ -98,10 +168,10 @@ int main() {
     }
 
     fprintf(out, "Z-Algorithm encontrou %d ocorrencias:\n", count);
-    for (int i = 0; i < count; i++)
+    for (int i = 0; i < count; i++) {
         fprintf(out, "Posicao: %d\n", occurrences[i]);
+    }
 
     fclose(out);
-
     return 0;
 }
