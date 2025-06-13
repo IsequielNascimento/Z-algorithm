@@ -140,32 +140,38 @@ int z_search(const char *text, const char *pattern, int text_len, int pattern_le
  * @return int Retorna 0 em caso de sucesso, ou 1 se ocorrer erro na leitura ou escrita de arquivos.
  */
 int main() {
+
+    //Teste com texto fixo
+    const char *fixed_text = "CCTTTAACGTATTGGATTACGCGCTTAGAAACGTTGCAGGTTGCGAATTTAACGCCATTTTCCTAACCACTGAC";
+    /////
+
     char text[MAX_TEXT_SIZE + 1] = {0};  // Armazena a sequência de DNA lida do arquivo
     char pattern[MAX_PATTERN_SIZE + 1] = "ATGC";  // Padrão fixo a ser buscado
 
-    // Abrindo o arquivo de entrada contendo a sequência
-    FILE *file = fopen("sequencia.txt", "r");
-    if (!file) {
-        printf("Erro ao abrir sequencia.txt\n");
-        return 1;
-    }
 
-    // Lê o arquivo linha por linha e concatena em uma única string
-    char line[256];
-    while (fgets(line, sizeof(line), file)) {
-        size_t len = strlen(line);
-        for (size_t i = 0; i < len; i++) {
-            // Ignora quebras de linha
-            if (line[i] != '\n' && line[i] != '\r') {
-                size_t curr_len = strlen(text);
-                if (curr_len < MAX_TEXT_SIZE) {
-                    text[curr_len] = line[i];
-                    text[curr_len + 1] = '\0';
-                }
-            }
-        }
-    }
-    fclose(file);  // Fecha o arquivo de entrada
+    // // Abrindo o arquivo de entrada contendo a sequência
+    // FILE *file = fopen("sequencia.txt", "r");
+    // if (!file) {
+    //     printf("Erro ao abrir sequencia.txt\n");
+    //     return 1;
+    // }
+
+    // // Lê o arquivo linha por linha e concatena em uma única string
+    // char line[256];
+    // while (fgets(line, sizeof(line), file)) {
+    //     size_t len = strlen(line);
+    //     for (size_t i = 0; i < len; i++) {
+    //         // Ignora quebras de linha
+    //         if (line[i] != '\n' && line[i] != '\r') {
+    //             size_t curr_len = strlen(text);
+    //             if (curr_len < MAX_TEXT_SIZE) {
+    //                 text[curr_len] = line[i];
+    //                 text[curr_len + 1] = '\0';
+    //             }
+    //         }
+    //     }
+    // }
+    // fclose(file);  // Fecha o arquivo de entrada
 
     // Calcula comprimento do texto e do padrão
     int text_len = strlen(text);
@@ -175,20 +181,24 @@ int main() {
     // Executa a busca do padrão no texto
     int count = z_search(text, pattern, text_len, pattern_len, occurrences);
 
-    // Cria o arquivo de saída para gravar as posições
-    FILE *out = fopen("posicoes.txt", "w");
-    if (!out) {
-        printf("Erro ao criar posicoes.txt\n");
-        return 1;
-    }
+    // // Cria o arquivo de saída para gravar as posições
+    // FILE *out = fopen("posicoes.txt", "w");
+    // if (!out) {
+    //     printf("Erro ao criar posicoes.txt\n");
+    //     return 1;
+    // }
 
-    // Escreve os resultados no arquivo
-    fprintf(out, "Z-Algorithm encontrou %d ocorrencias:\n", count);
+    // // Escreve os resultados no arquivo
+    // fprintf(out, "Z-Algorithm encontrou %d ocorrencias:\n", count);
+    // for (int i = 0; i < count; i++) {
+    //     fprintf(out, "Posicao: %d\n", occurrences[i]);
+    // }
+
+ //   fclose(out);  // Fecha o arquivo de saída
+    printf("Z-Algorithm encontrou %d ocorrencias:\n", count);
     for (int i = 0; i < count; i++) {
-        fprintf(out, "Posicao: %d\n", occurrences[i]);
+        printf("Posicao: %d\n", occurrences[i]);
     }
 
-    fclose(out);  // Fecha o arquivo de saída
     return 0;    
 }
-
