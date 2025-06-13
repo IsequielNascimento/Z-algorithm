@@ -189,6 +189,6 @@ int main() {
     }
 
     fclose(out);  // Fecha o arquivo de saída
-    return 0;     // Execução bem-sucedida
+    return 0;    
 }
 
