@@ -142,10 +142,16 @@ int z_search(const char *text, const char *pattern, int text_len, int pattern_le
 int main() {
 
     //Teste com texto fixo
-    const char *fixed_text = "CCTTTAACGTATTGGATTACGCGCTTAGAAACGTTGCAGGTTGCGAATTTAACGCCATTTTCCTAACCACTGAC";
+    const char *fixed_text = "CCTTTAACGATGCTATTGGATTACGCGCTTAGAAACGTTGCAGGTTGCGAATTTAACGCCATTTTCCTAACCACTGAC";
+
     /////
 
     char text[MAX_TEXT_SIZE + 1] = {0};  // Armazena a sequência de DNA lida do arquivo
+
+    /// teste com texto fixo
+        strncpy(text, fixed_text, MAX_TEXT_SIZE);
+
+        ///
     char pattern[MAX_PATTERN_SIZE + 1] = "ATGC";  // Padrão fixo a ser buscado
 
 
