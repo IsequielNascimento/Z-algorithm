@@ -35,7 +35,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define MAX_TEXT_SIZE 1000 //reduzido para 1000 para testes         /**< Tamanho máximo da sequência de entrada */
+#define MAX_TEXT_SIZE 8000 //reduzido para 1000 para testes         /**< Tamanho máximo da sequência de entrada */
 #define MAX_PATTERN_SIZE 100       /**< Tamanho máximo do padrão a ser buscado */
 #define MAX_OCCURRENCES 1000       /**< Número máximo de ocorrências a registrar */
 
@@ -84,20 +84,18 @@ uint8_t rx_buff[10];
 void compute_z_array(const char *s, int z[], int length) {
     int l = 0, r = 0;
     z[0] = 0;
-
     for (int i = 1; i < length; i++) {
         if (i <= r)
             z[i] = (r - i + 1 < z[i - l]) ? (r - i + 1) : z[i - l];
-
         while (i + z[i] < length && s[z[i]] == s[i + z[i]])
             z[i]++;
-
         if (i + z[i] - 1 > r) {
             l = i;
             r = i + z[i] - 1;
         }
     }
 }
+
 
 
 /**
@@ -111,14 +109,16 @@ void compute_z_array(const char *s, int z[], int length) {
  *
  * @return Número de ocorrências encontradas.
  */
-int z_search(const char *text, const char *pattern, int text_len, int pattern_len, int occurrences[]) {
-    char concat[MAX_PATTERN_SIZE + 1 + MAX_TEXT_SIZE];
-    int z[MAX_PATTERN_SIZE + 1 + MAX_TEXT_SIZE];
+int z_search(const char *text, const char *pattern,
+             int text_len, int pattern_len, int occurrences[]) {
     int concat_len = pattern_len + 1 + text_len;
+    char concat[MAX_PATTERN_SIZE + 1 + MAX_TEXT_SIZE + 1];
+    int z[MAX_PATTERN_SIZE + 1 + MAX_TEXT_SIZE + 1];
 
-    strncpy(concat, pattern, pattern_len);
+    memcpy(concat, pattern, pattern_len);
     concat[pattern_len] = '$';
-    strncpy(concat + pattern_len + 1, text, text_len);
+    memcpy(concat + pattern_len + 1, text, text_len);
+    concat[concat_len] = '\0';
 
     compute_z_array(concat, z, concat_len);
 
@@ -128,10 +128,14 @@ int z_search(const char *text, const char *pattern, int text_len, int pattern_le
             occurrences[count++] = i - pattern_len - 1;
         }
     }
-
     return count;
 }
 
+/* Redireciona printf() para USART2 */
+int __io_putchar(int ch) {
+    HAL_UART_Transmit(&huart2, (uint8_t *)&ch, 1, HAL_MAX_DELAY);
+    return ch;
+}
 
 
 /* USER CODE END 0 */
@@ -174,31 +178,21 @@ int main(void)
   /* USER CODE BEGIN 2 */
   /* USER CODE BEGIN 1 */
 	  //Teste com texto fixo
-	    const char *fixed_text = "CCTTTAACGATGCTATTGGATTACGCGCTTAGAAACGTTGCAGGTTGCGAATTTAACGCCATTTTCCTAACCACTGAC";
+  const char *fixed_text = "CCTTTAACGATGCTATTGGATTACGCGCTTAGAAACGTTGCAGGTTGCGAATTTAACGCCATTTTCCTAACCACTGAC";
+    char text[MAX_TEXT_SIZE + 1] = {0};
+    strncpy(text, fixed_text, MAX_TEXT_SIZE);
 
-	    /////
+    const char *pattern = "ATGC";
+    int text_len = strlen(text);
+    int pattern_len = strlen(pattern);
+    int occurrences[MAX_OCCURRENCES];
 
-	     char text[MAX_TEXT_SIZE + 1] = {0};  // Armazena a sequência de DNA lida do arquivo
+    int count = z_search(text, pattern, text_len, pattern_len, occurrences);
 
-	    /// teste com texto fixo
-	        strncpy(text, fixed_text, MAX_TEXT_SIZE);
-
-	        ///
-	    char pattern[MAX_PATTERN_SIZE + 1] = "ATGC";  // Padrão fixo a ser buscado
-
-
-	    // Calcula comprimento do texto e do padrão
-	      int text_len = strlen(text);
-	      int pattern_len = strlen(pattern);
-	      int occurrences[MAX_OCCURRENCES];  // Vetor para armazenar as posições encontradas
-
-	      // Executa a busca do padrão no texto
-	      int count = z_search(text, pattern, text_len, pattern_len, occurrences);
-
-	      printf("Z-Algorithm encontrou %d ocorrencias:\n", count);
-	       for (int i = 0; i < count; i++) {
-	           printf("Posicao: %d\n", occurrences[i]);
-	       }
+    printf("Z-Algorithm encontrou %d ocorrencias:\r\n", count);
+    for (int i = 0; i < count; i++) {
+        printf("Posicao: %d\r\n", occurrences[i]);
+    }
 
   /* USER CODE END 1 */
   /* USER CODE END 2 */
@@ -215,12 +209,12 @@ int main(void)
 	HAL_UART_Transmit(&huart2, text, 1,1000);
     HAL_Delay(1000);
 
-    if(HAL_UART_Receive(&huart1, rx_buff, 10, 1000)==HAL_OK) //if transfer is successful
-     {
-       __NOP(); //You need to toggle a breakpoint on this line!
-     } else {
-       __NOP();
-     }
+    // if(HAL_UART_Receive(&huart1, rx_buff, 10, 1000)==HAL_OK) //if transfer is successful
+    //  {
+    //    __NOP(); //You need to toggle a breakpoint on this line!
+    //  } else {
+    //    __NOP();
+    //  }
 
   }
 
