@@ -61,15 +61,19 @@ static void MX_USART1_UART_Init(void);
 #include <string.h>
 #include <stdio.h>
 
-#define MAX_TEXT_SIZE 8000
+#define MAX_TEXT_SIZE 2000
 #define MAX_PATTERN_SIZE 100
 #define MAX_OCCURRENCES 1000
 
+// Variável externa para o handle da UART2
 extern UART_HandleTypeDef huart2;
 
-void uart_print(const char *msg) {
-    HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
+// Redireciona a função _write para usar a UART2
+int _write(int file, char *ptr, int len) {
+    HAL_UART_Transmit(&huart2, (uint8_t*)ptr, len, HAL_MAX_DELAY);
+    return len;
 }
+
 
 void compute_z_array(const char *s, int z[], int length) {
     int l = 0, r = 0;
@@ -145,47 +149,40 @@ int main(void)
   MX_USART1_UART_Init();
 
 
-  /* USER CODE BEGIN 2 */
-  /* USER CODE BEGIN 2 */
-  const char *fixed_text = "CCTTTAACGATGCTATTGGATTACGCGCTTAGAAACGTTGCAGGTTGCGAATTTAACGCCATTTTCCTAACCACTGAC";
-  char text[MAX_TEXT_SIZE + 1] = {0};
-  strncpy(text, fixed_text, MAX_TEXT_SIZE);
-  char pattern[MAX_PATTERN_SIZE + 1] = "ATGC";
+/* USER CODE BEGIN 2 */
 
-  int text_len = strlen(text);
-  int pattern_len = strlen(pattern);
-  int occurrences[MAX_OCCURRENCES];
+// Z-Algorithm
+const char *fixed_text = "CCTTTAACGATGCTATTGGATTACGCGCTTAGAAACGTTGCAGGTTGCGAATTTAACGCCATTTTCCTAACCACTGAC";
+char text[MAX_TEXT_SIZE + 1] = {0}; // Inicialize com zeros
+strncpy(text, fixed_text, MAX_TEXT_SIZE);
+char pattern[MAX_PATTERN_SIZE + 1] = "ATGC";
 
-  int count = z_search(text, pattern, text_len, pattern_len, occurrences);
+int text_len = strlen(text);
+int pattern_len = strlen(pattern);
+int occurrences[MAX_OCCURRENCES];
 
-  char buffer[64];
-  sprintf(buffer, "Z-Algorithm encontrou %d ocorrencias:\r\n", count);
-  uart_print(buffer);
+// 
+printf("Iniciando Z-Algorithm...\n");
 
-  for (int i = 0; i < count; i++) {
-      sprintf(buffer, "Posicao: %d\r\n", occurrences[i]);
-      uart_print(buffer);
-  }
+int count = z_search(text, pattern, text_len, pattern_len, occurrences);
 
-  /* USER CODE END 2 */
+printf("Z-Algorithm encontrou %d ocorrencias:\n", count);
+for (int i = 0; i < count; i++) {
+    printf("Posicao: %d\n", occurrences[i]);
+}
+printf("Execucao do Z-Algorithm concluida.\n");
 
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
-  while (1)
-  {
-    /* USER CODE END WHILE */
+/* USER CODE END 2 */
 
-    /* USER CODE BEGIN 3 */
+/* Infinite loop */
+/* USER CODE BEGIN WHILE */
+while (1)
+{
+  /* USER CODE END WHILE */
 
+  /* USER CODE BEGIN 3 */
+}
 
-    // if(HAL_UART_Receive(&huart1, rx_buff, 10, 1000)==HAL_OK) //if transfer is successful
-    //  {
-    //    __NOP(); //You need to toggle a breakpoint on this line!
-    //  } else {
-    //    __NOP();
-    //  }
-
-  }
 
   /* USER CODE END 3 */
 
@@ -251,7 +248,7 @@ static void MX_USART1_UART_Init(void)
 
   /* USER CODE END USART1_Init 1 */
   huart1.Instance = USART1;
-  huart1.Init.BaudRate = 38400;
+  huart1.Init.BaudRate = 115200;
   huart1.Init.WordLength = UART_WORDLENGTH_8B;
   huart1.Init.StopBits = UART_STOPBITS_1;
   huart1.Init.Parity = UART_PARITY_NONE;
@@ -286,7 +283,7 @@ static void MX_USART2_UART_Init(void)
 
   /* USER CODE END USART2_Init 1 */
   huart2.Instance = USART2;
-  huart2.Init.BaudRate = 38400;
+  huart2.Init.BaudRate = 115200;
   huart2.Init.WordLength = UART_WORDLENGTH_8B;
   huart2.Init.StopBits = UART_STOPBITS_1;
   huart2.Init.Parity = UART_PARITY_NONE;
