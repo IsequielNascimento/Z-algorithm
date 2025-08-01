@@ -2,13 +2,12 @@
 #include <time.h>
 #include <string.h>
 
-#define MAX_TEXT_SIZE 1198
+#define MAX_TEXT_SIZE 1100
 #define MAX_PATTERN_SIZE 4
 #define MAX_OCCURRENCES 20
-#define N_EXECUCOES 100000
+#define N_EXECUCOES 1000
 
-static char concat_buffer[MAX_PATTERN_SIZE + 1 + MAX_TEXT_SIZE];
-static int z_array_buffer[MAX_PATTERN_SIZE + 1 + MAX_TEXT_SIZE];
+
 
 void compute_z_array(const char *s, int z[], int length) {
     int l = 0, r = 0;
@@ -30,9 +29,14 @@ void compute_z_array(const char *s, int z[], int length) {
 }
 
 __uint8_t z_search(const char *text, const char *pattern, int text_len, int pattern_len, char occurrences[]) {
+     char concat_buffer[MAX_PATTERN_SIZE + 1 + MAX_TEXT_SIZE];
+     int z_array_buffer[MAX_PATTERN_SIZE + 1 + MAX_TEXT_SIZE];
     int concat_len = pattern_len + 1 + text_len;
-    strncpy(concat_buffer, pattern, pattern_len);
-    concat_buffer[pattern_len] = '$';
+
+     strncpy(concat_buffer, pattern, pattern_len);
+    concat_buffer[pattern_len] = '$'; // Adiciona o separador
+
+    // Copia o texto para o buffer de concatenação
     strncpy(concat_buffer + pattern_len + 1, text, text_len);
 
     compute_z_array(concat_buffer, z_array_buffer, concat_len);
@@ -47,9 +51,7 @@ __uint8_t z_search(const char *text, const char *pattern, int text_len, int patt
 }
 
 int main(void) {
-    static const char fixed_text[MAX_TEXT_SIZE] = {
-        "CCTTTAACGTATTGGAATGCTTACGCGCTTAGAAACGTTGCAGGTTGCGAATTTAACGCCATTCCTTTAACGTATTGGATTACGCGCTTAGAAACGTTGCAGGTTGCGAATTTAACGCCATTTTCCTTTAACGTATTGGATTACGCGCTTAGAAACGTTGCAGGTTGCGAATTTAACGCCATTTTCCTTTAACGTATTGGATTACGCGCTTAGAAACGTTGCAGGTTGCGAATTTAACGCCATTTTCCTTTAACGTATTGGATTACGCGCTTAGAAACGTTGCAGGTTGCGAATTTAACGCCATTTTTT"
-    };
+    static const char fixed_text[MAX_TEXT_SIZE] = "CCTTTAACGTATTGGAATGCTTACGCGCTTAGAAACGTTGCAGGTTGCGAATTTAACGCCATTCCTTTAACGTATTGGATTACGCGCTTAGAAACGTTGCAGGTTGCGAATTTAACGCCATTTTCCTTTAACGTATTGGATTACGCGCTTAGAAACGTTGCAGGTTGCGAATTTAACGCCATTTTCCTTTAACGTATTGGATTACGCGCTTAGAAACGTTGCAGGTTGCGAATTTAACGCCATTTTCCTTTAACGTATTGGATTACGCGCTTAGAAACGTTGCAGGTTGCGAATTTAACGCCATTTTTT";
     static const char pattern[MAX_PATTERN_SIZE] = {'A','T','G','C'};
     char occurrences[MAX_OCCURRENCES];
 
